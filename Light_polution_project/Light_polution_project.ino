@@ -23,9 +23,12 @@
 #define L4 3
 #define L5 2
 
+//
 #define RETURN1 HIGH
 #define RETURN0 LOW
-#define TIMEON 2500  // Time in milliseconds (2.5 seconds)
+
+// Time in milliseconds (2.5 seconds)
+#define TIMEON 2500  
 
 // Track timers and states for each light
 unsigned long startTimeL1, startTimeL2, startTimeL3, startTimeL4, startTimeL5;
