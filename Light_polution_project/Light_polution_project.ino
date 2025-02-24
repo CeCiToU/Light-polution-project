@@ -1,4 +1,4 @@
-// Define motor pins
+// Define motor pins.
 #define D1 1
 #define D2 13
 #define D3 12
@@ -8,39 +8,44 @@
 #define D7 8
 #define D8 7
 
-// Define sensor pins
+// Define sensor pins.
+// Sensor KIT2140.
 #define S1 A0
 #define S2 A1
 #define S3 A2
 #define S4 A3
+// Sensor K2063.
 #define S5 A4
+// Switch for motors.
 #define S6 A5
 
-// Define LED pins
+// Define LED pins.
 #define L1 5
 #define L2 6
 #define L3 4
 #define L4 3
 #define L5 2
 
-//
+// Digital write mode for lamps.
 #define RETURN1 HIGH
 #define RETURN0 LOW
 
-// Time in milliseconds (2.5 seconds)
+// Time in milliseconds (2.5 seconds).
 #define TIMEON 2500  
 
-// Track timers and states for each light
+// Track timers and states for each light.
 unsigned long startTimeL1, startTimeL2, startTimeL3, startTimeL4, startTimeL5;
 bool L1On = false, L2On = false, L3On = false, L4On = false, L5On = false;
 
+// Variables for sensor data and motor state.
 int S1data, S2data, S3data, S4data, S5data, S6data;
 bool MotorON = false;
 
-int delayInMs = 100;  // Stepper motor speed (lower = faster)
+// Stepper motor speed (lower = faster).
+int delayInMs = 100;
 
 void setup() {
-  // Set motor pins as OUTPUT
+  // Set motor pins as OUTPUT.
   pinMode(D1, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
@@ -50,7 +55,7 @@ void setup() {
   pinMode(D7, OUTPUT);
   pinMode(D8, OUTPUT);
 
-  // Set sensor pins as INPUT
+  // Set sensor pins as INPUT.
   pinMode(S1, INPUT);
   pinMode(S2, INPUT);
   pinMode(S3, INPUT);
@@ -58,7 +63,7 @@ void setup() {
   pinMode(S5, INPUT);
   pinMode(S6, INPUT);
 
-  // Set LED pins as OUTPUT
+  // Set LED pins as OUTPUT.
   pinMode(L1, OUTPUT);
   pinMode(L2, OUTPUT);
   pinMode(L3, OUTPUT);
@@ -69,7 +74,7 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
 
-  // Turn off lights after TIMEON milliseconds
+  // Turn off lights after TIMEON milliseconds.
   if (L1On && currentMillis - startTimeL1 >= TIMEON) {
     digitalWrite(L1, RETURN0);
     L1On = false;
@@ -91,7 +96,7 @@ void loop() {
     L5On = false;
   }
 
-  // Read sensor values
+  // Read sensor values.
   S1data = analogRead(S1);
   S2data = analogRead(S2);
   S3data = analogRead(S3);
@@ -99,7 +104,7 @@ void loop() {
   S5data = analogRead(S5);
   S6data = analogRead(S6);
 
-  // Turn on lights if sensor value is below threshold
+  // Turn on lights if sensor value is below threshold.
   if (S1data < 100) {
     digitalWrite(L1, RETURN1);
     startTimeL1 = millis();
@@ -126,52 +131,57 @@ void loop() {
     L5On = true;
   }
 
-  // Control motor based on S6
+  // Control motor based on S6.
   MotorON = (S6data >= 20);
 
+  // Smooth start and stop for the motor by controlling delays between phases.
   if (!MotorON) {
     if (delayInMs > 10) {
-      delayInMs -= 5;  // Gradually increase speed
+      delayInMs -= 5;  // Gradually increase speed.
       if (delayInMs < 10){
-        delayInMs = 10;
+        delayInMs = 10; // Sets min delay rate to 10 if goes below 10!
       }
     }
     full_step();
   } 
   else {
     if (delayInMs < 100) {
-      delayInMs += 2;  // Gradually decrease speed
+      delayInMs += 2;  // Gradually decrease speed.
       full_step();
     }
 
-    // Ensure motor stops completely after slowing down
+    // Ensure motor stops completely after slowing down.
     stopMotor();
   }
 }
 
 void full_step() {
-  // First step
+  // These steps are fully explained in our GitHub repository.  
+  // The steps include controlling both motors simultaneously.  
+  // This ensures synchronized motion for both motors.  
+
+  // First step.
   digitalWrite(D1, HIGH); digitalWrite(D5, HIGH);
   digitalWrite(D2, HIGH); digitalWrite(D6, HIGH);
   digitalWrite(D3, LOW);  digitalWrite(D7, LOW);
   digitalWrite(D4, LOW);  digitalWrite(D8, LOW);
   delay(delayInMs);
 
-  // Second step
+  // Second step.
   digitalWrite(D1, LOW);  digitalWrite(D5, LOW);
   digitalWrite(D2, HIGH); digitalWrite(D6, HIGH);
   digitalWrite(D3, HIGH); digitalWrite(D7, HIGH);
   digitalWrite(D4, LOW);  digitalWrite(D8, LOW);
   delay(delayInMs);
 
-  // Third step
+  // Third step.
   digitalWrite(D1, LOW);  digitalWrite(D5, LOW);
   digitalWrite(D2, LOW);  digitalWrite(D6, LOW);
   digitalWrite(D3, HIGH); digitalWrite(D7, HIGH);
   digitalWrite(D4, HIGH); digitalWrite(D8, HIGH);
   delay(delayInMs);
 
-  // Fourth step
+  // Fourth step.
   digitalWrite(D1, HIGH); digitalWrite(D5, HIGH);
   digitalWrite(D2, LOW);  digitalWrite(D6, LOW);
   digitalWrite(D3, LOW);  digitalWrite(D7, LOW);
@@ -180,6 +190,7 @@ void full_step() {
 }
 
 void stopMotor() {
+  // Sets all the input for phases to low ensuring no rotation is able!
   digitalWrite(D1, LOW);
   digitalWrite(D2, LOW);
   digitalWrite(D3, LOW);
